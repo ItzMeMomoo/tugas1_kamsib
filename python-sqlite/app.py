@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField
+from wtforms import StringField, IntegerField, PasswordField
 from flask_wtf.csrf import CSRFProtect
 from wtforms.validators import DataRequired, NumberRange
 from functools import wraps
@@ -32,6 +32,11 @@ class StudentForm(FlaskForm):
     age = IntegerField('Age', validators=[DataRequired(), NumberRange(min=1)])
     grade = StringField('Grade', validators=[DataRequired()])
 
+# Flask-WTF Form untuk login
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+
 # Middleware untuk memeriksa autentikasi
 def login_required(f):
     @wraps(f)
@@ -45,21 +50,29 @@ def login_required(f):
 # Route login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    form = FlaskForm()  # Add this line
-    if form.validate_on_submit():  # Change this from request.method == 'POST'
-        username = request.form['username']
-        password = request.form['password']
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
         
         if username == 'admin' and password == 'kelompok9':
             session['user_id'] = username
+            flash('Logged in successfully.', 'success')
             return redirect(url_for('index'))
         else:
             flash('Invalid username or password', 'danger')
     
-    return render_template('login.html', form=form)  # Pass form to template
-# Route untuk halaman tabel student (memerlukan login terlebih dahulu)
+    return render_template('login.html', form=form)
+
+# Route logout
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    flash('Logged out successfully.', 'success')
+    return redirect(url_for('index'))
+
+# Route untuk halaman tabel student (tidak memerlukan login untuk melihat)
 @app.route('/')
-@login_required
 def index():
     students = db.session.execute(text('SELECT * FROM student')).fetchall()
     return render_template('index.html', students=students)

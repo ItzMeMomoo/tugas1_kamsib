@@ -42,7 +42,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('You need to login first.', 'warning')
+            flash('Harus login terlebih dahulu.', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -57,10 +57,10 @@ def login():
         
         if username == 'admin' and password == 'kelompok9':
             session['user_id'] = username
-            flash('Logged in successfully.', 'success')
+            flash('Login berhasil.', 'success')
             return redirect(url_for('index'))
         else:
-            flash('Invalid username or password', 'danger')
+            flash('Username atau password salah!', 'danger')
     
     return render_template('login.html', form=form)
 
@@ -68,7 +68,7 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    flash('Logged out successfully.', 'success')
+    flash('Logout berhasil.', 'success')
     return redirect(url_for('index'))
 
 # Route untuk halaman tabel student (tidak memerlukan login untuk melihat)
@@ -118,7 +118,7 @@ def edit_student(id):
     else:
         student = db.session.execute(text("SELECT * FROM student WHERE id=:id"), {'id': id}).fetchone()
         if not student:
-            return "Student not found", 404
+            return "Student tidak ditemukan", 404
         
         # Isi form dengan data awal
         form.name.data = student.name

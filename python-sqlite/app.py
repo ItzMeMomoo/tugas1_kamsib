@@ -9,14 +9,13 @@ from functools import wraps
 
 app = Flask(__name__)
 
-# Setup Secret Key for CSRF
+# Menambahkan secret key untuk CSRF
 app.config['SECRET_KEY'] = 'secretkey12345'
 csrf = CSRFProtect(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# Model untuk student
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -71,13 +70,13 @@ def logout():
     flash('Logout berhasil.', 'success')
     return redirect(url_for('index'))
 
-# Route untuk halaman tabel student (tidak memerlukan login untuk melihat)
+# Route untuk halaman tabel student (buat view, user sebelum login)
 @app.route('/')
 def index():
     students = db.session.execute(text('SELECT * FROM student')).fetchall()
     return render_template('index.html', students=students)
 
-# Route untuk menambah student
+# Route add student
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_student():
@@ -93,7 +92,7 @@ def add_student():
         return redirect(url_for('index'))
     return render_template('add_student.html', form=form)
 
-# Route untuk menghapus student
+# Route delete student
 @app.route('/delete/<string:id>')
 @login_required
 def delete_student(id):
@@ -101,7 +100,7 @@ def delete_student(id):
     db.session.commit()
     return redirect(url_for('index'))
 
-# Route untuk mengedit student
+# Route edit student
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_student(id):
@@ -120,7 +119,6 @@ def edit_student(id):
         if not student:
             return "Student tidak ditemukan", 404
         
-        # Isi form dengan data awal
         form.name.data = student.name
         form.age.data = student.age
         form.grade.data = student.grade

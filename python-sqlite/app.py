@@ -50,7 +50,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         
-        if username == 'kelompok4' and password == 'kelompok4':
+        if username == 'admin' and password == 'kelompok9':
             session['user_id'] = username
             return redirect(url_for('index'))
         else:

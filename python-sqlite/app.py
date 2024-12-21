@@ -110,12 +110,21 @@ def edit_student(id):
         age = form.age.data
         grade = form.grade.data
         
-        query = text("UPDATE student SET name=:name, age=:age, grade=:grade WHERE id=:id")
-        db.session.execute(query, {'name': name, 'age': age, 'grade': grade, 'id': id})
-        db.session.commit()
-        return redirect(url_for('index'))
+        if name.replace(' ','').isalpha() and str(age).isnumeric() and grade.isalnum():
+            query = text("UPDATE student SET name=:name, age=:age, grade=:grade WHERE id=:id")
+            db.session.execute(query, {'name': name, 'age': age, 'grade': grade, 'id': id})
+            db.session.commit()
+            flash('Data berhasil diupdate!', 'success')
+            return redirect(url_for('index'))
+        else:
+            flash('Input tidak valid! Nama hanya boleh berisi huruf, umur harus berupa angka, dan grade harus berupa huruf atau angka.', 'danger')
+            query = text("SELECT * FROM student WHERE id=:id")
+            student = db.session.execute(query, {'id': id}).fetchone()
+            return render_template('edit.html', form=form, student=student)
+            
     else:
-        student = db.session.execute(text("SELECT * FROM student WHERE id=:id"), {'id': id}).fetchone()
+        query = text("SELECT * FROM student WHERE id=:id")
+        student = db.session.execute(query, {'id': id}).fetchone()
         if not student:
             return "Student tidak ditemukan", 404
         
